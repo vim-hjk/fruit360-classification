@@ -7,7 +7,6 @@ import albumentations.pytorch
 
 from easydict import EasyDict
 from prettyprinter import cpprint
-from torch.utils.data import DataLoader
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 from dataset import AugMix
@@ -82,7 +81,7 @@ def main(cfg):
 
     if USE_KFOLD_CV:
         kfold = StratifiedKFold(n_splits=cfg.values.val_args.n_splits)
-        k = 0
+        k = 1
 
         for train_idx, val_idx in kfold.split(whole_df, whole_label):
             print('\n')
@@ -93,9 +92,9 @@ def main(cfg):
             train_loader = get_dataloader(df=train_df, transform=train_transform, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
             val_loader = get_dataloader(df=val_df, transform=val_transform, batch_size=VAL_BATCH_SIZE, shuffle=False)
 
-            k += 1
-
             train(cfg, k, train_loader, val_loader)
+
+            k += 1
 
     else:
         cpprint('=' * 20 + f'START TRAINING' + '=' * 20)

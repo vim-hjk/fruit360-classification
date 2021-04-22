@@ -1,0 +1,32 @@
+base:
+  model_arcs: [
+    'resnet18d',
+  ]
+  weights: [
+    './results/resnet18d/1_epoch_99.82%_with_val.pth',
+  ]
+  num_classes: 131
+  batch_size: 128
+  info_path: './prediction/info.csv'
+  save_path: './prediction/submission.csv'
+
+
+k-fold:
+  model_arcs: [
+    'resnet18d',
+    'resnet18d',
+    'resnet18d',
+    'resnet18d',
+    'resnet18d'
+  ]
+  weights: [
+    './results/resnet18d/1_fold/1_epoch_97.24%_with_val.pth',
+    './results/resnet18d/2_fold/1_epoch_98.47%_with_val.pth',
+    './results/resnet18d/3_fold/1_epoch_96.66%_with_val.pth',
+    './results/resnet18d/4_fold/1_epoch_95.05%_with_val.pth',
+    './results/resnet18d/5_fold/1_epoch_94.84%_with_val.pth'
+  ]
+  num_classes: 131
+  batch_size: 128
+  info_path: './prediction/info.csv'
+  save_path: './prediction/submission.csv'

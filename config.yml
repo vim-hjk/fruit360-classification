@@ -1,0 +1,53 @@
+base:
+  seed: 42
+  model_arc: 'resnet18d'
+  num_classes: 131
+  input_dir: './data/train.csv'
+  output_dir: './results/'
+  train_only: False
+  cutmix_args:
+    use_cutmix: False
+    beta: 1.0
+    cutmix_prob: 0.5
+  train_args:
+    num_epochs: 1
+    train_batch_size: 128
+    val_batch_size: 128
+    optimizer: 'AdamP'
+    lr: 0.0001
+    weight_decay: 0.01
+    scheduler: 'CosineAnnealingLR'
+    loss_fn: 'CrossEntropyLoss'
+    log_intervals: 10
+    eval_metric: 'accuracy'            
+  val_args:
+    use_kfold: False
+    n_splits: 0
+    test_size: 0.2
+
+k-fold:
+  seed: 42
+  model_arc: 'resnet18d'
+  num_classes: 131
+  input_dir: './data/train.csv'
+  output_dir: './results/'
+  train_only: False
+  cutmix_args:
+    use_cutmix: True
+    beta: 1.0
+    cutmix_prob: 0.5
+  train_args:
+    num_epochs: 1
+    train_batch_size: 128
+    val_batch_size: 128
+    optimizer: 'AdamP'
+    lr: 0.0001
+    weight_decay: 0.01
+    scheduler: 'CosineAnnealingLR'
+    loss_fn: 'CrossEntropyLoss'
+    log_intervals: 10
+    eval_metric: 'accuracy'            
+  val_args:
+    use_kfold: True
+    n_splits: 5
+    test_size: 0.0

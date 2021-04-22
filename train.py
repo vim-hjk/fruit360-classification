@@ -35,15 +35,17 @@ def train(cfg, k, train_loader, val_loader):
     log_intervals = cfg.values.train_args.log_intervals
 
     # Set CutMix arguments
-    USE_CUTMIX = cfg.values.cutmix_args.use_cutmix
+    USE_CUTMIX = cfg.values.cutmix_args.use_cutmix    
     beta = cfg.values.cutmix_args.beta
     cutmix_prob = cfg.values.cutmix_args.cutmix_prob    
+    cutmix = CutMix(beta=beta, cutmix_prob=cutmix_prob)
     
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     model = PretrainedModel(model_arc=MODEL_ARC, num_classes=NUM_CLASSES)
     model.to(device)
-    summary_(model, (3, 224, 224), batch_size=train_batch_size)
+    if k < 2:
+        summary_(model, (3, 224, 224), batch_size=train_batch_size)
 
     optimizers = [
         model.parameters(),
@@ -78,10 +80,13 @@ def train(cfg, k, train_loader, val_loader):
             if USE_CUTMIX:
                 if beta > 0 and ratio < cutmix_prob:
                     # generate mixed sample
-                    sample = CutMix(images, labels)
+                    sample = cutmix.forward(images, labels)
 
                     logits = model(sample['image'])                    
-                    loss = criterion(logits, sample['label_1']) * sample['lam'] + criterion(logits, sample['label_2'] * (1. - sample['lam']))
+                    loss = criterion(logits, sample['label_1']) * sample['lam'] + criterion(logits, sample['label_2']) * (1. - sample['lam'])
+                else:
+                    logits = model(images)
+                    loss = criterion(logits, labels)
             else:
                 logits = model(images)
                 loss = criterion(logits, labels)
@@ -143,8 +148,8 @@ def train(cfg, k, train_loader, val_loader):
 
             if is_best:
                 if k > 0:
-                    os.makedirs(os.path.join(OUTPUT_DIR, MODEL_ARC, f'/{k}fold'), exist_ok=True)
-                    torch.save(model.state_dict(), os.path.join(OUTPUT_DIR, MODEL_ARC, f'/{k}_fold/{epoch + 1}_epoch_{best_acc:.2f}%_with_val.pth'))
+                    os.makedirs(os.path.join(OUTPUT_DIR, MODEL_ARC, f'{k}_fold'), exist_ok=True)
+                    torch.save(model.state_dict(), os.path.join(OUTPUT_DIR, MODEL_ARC, f'{k}_fold', f'{epoch + 1}_epoch_{best_acc:.2f}%_with_val.pth'))
                 else:                    
                     torch.save(model.state_dict(), os.path.join(OUTPUT_DIR, MODEL_ARC, f'{epoch + 1}_epoch_{best_acc:.2f}%_with_val.pth'))
         

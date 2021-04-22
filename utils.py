@@ -51,13 +51,6 @@ def get_dataloader(df, transform, batch_size, shuffle):
     return loader
 
 
-def get_learning_rate(optimizer):
-    lr = []
-    for param_group in optimizer.param_groups:
-        lr += [param_group['lr']]
-    return lr
-
-
 def rand_bbox(size, lam):
     width = size[2]
     height = size[3]
@@ -85,7 +78,7 @@ class CutMix(object):
 
     def forward(self, images, labels):
         # generate mixed sample
-        lam = np.random.beta
+        lam = np.random.beta(self.beta, self.beta)
         rand_index = torch.randperm(images.size()[0]).cuda()
         label_1 = labels
         label_2 = labels[rand_index]
