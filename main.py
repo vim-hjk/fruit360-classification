@@ -1,3 +1,4 @@
+import wandb
 import torch
 import yaml
 import argparse
@@ -9,9 +10,10 @@ from easydict import EasyDict
 from prettyprinter import cpprint
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
-from dataset import AugMix
-from utils import seed_everything, get_dataloader
-from train import train
+from src.lib.dataset import AugMix
+from src.lib.train import train
+from src.utils.util import seed_everything, get_dataloader
+from src.utils.yml import YamlConfigManager
 
 # Set Config
 class YamlConfigManager:
@@ -112,12 +114,16 @@ def main(cfg):
 
 
 if __name__ == '__main__':
+    wandb.init(project="fruit360-image-classification", reinit=True)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_file_path', type=str, default='./config.yml')
+    parser.add_argument('--config_file_path', type=str, default='./configs/config.yml')
     parser.add_argument('--config', type=str, default='base')
     
     args = parser.parse_args()
     cfg = YamlConfigManager(args.config_file_path, args.config)
+    wandb.run.name = cfg.values.model_arc
+    wandb.run.save()
+    wandb.config.update(cfg)
     cpprint(cfg.values, sort_dict_keys=False)
     print('\n')
     main(cfg)

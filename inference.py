@@ -17,7 +17,7 @@ from main import YamlConfigManager
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--config_file_path', type=str, default='./inference_config.yml')
+parser.add_argument('--config_file_path', type=str, default='.configs/inference_config.yml')
 parser.add_argument('--config', type=str, default='base')
 
 args = parser.parse_args()
@@ -71,7 +71,3 @@ pred = torch.mean(preds, 0).argmax(-1).flatten().cpu().numpy()
 info_df['label'] = pred
 info_df.to_csv(f'./prediction/{args.config}_submission.csv', index=False)
 print(f'Inference Done!')
-
-
-
-        

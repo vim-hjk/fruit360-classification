@@ -2,8 +2,9 @@ import os
 import cv2
 import numpy as np
 
+from albumentations import ImageOnlyTransform
+
 from torch.utils.data import Dataset
-from albumentations.core.transforms_interface import ImageOnlyTransform
 
 
 class Fruit360Dataset(Dataset):

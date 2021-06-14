@@ -1,21 +1,24 @@
 base:
   seed: 42
-  model_arc: 'resnet18d'
+  model_arc: 'efficientnet_b0'
   num_classes: 131
   input_dir: './data/train.csv'
-  output_dir: './results/'
+  output_dir: './checkpoints/'
   train_only: False
   cutmix_args:
-    use_cutmix: False
+    use_cutmix: True
     beta: 1.0
     cutmix_prob: 0.5
   train_args:
-    num_epochs: 1
+    num_epochs: 3
     train_batch_size: 128
     val_batch_size: 128
     optimizer: 'AdamP'
-    lr: 0.0001
-    weight_decay: 0.01
+    max_lr: 0.0001
+    min_lr: 0.00001
+    cycle: 3
+    gamma: 0.5
+    weight_decay: 0.0001
     scheduler: 'CosineAnnealingLR'
     loss_fn: 'CrossEntropyLoss'
     log_intervals: 10
@@ -27,10 +30,10 @@ base:
 
 k-fold:
   seed: 42
-  model_arc: 'resnet18d'
+  model_arc: 'efficientnet_b0'
   num_classes: 131
   input_dir: './data/train.csv'
-  output_dir: './results/'
+  output_dir: './checkpoints/'
   train_only: False
   cutmix_args:
     use_cutmix: True
@@ -41,8 +44,11 @@ k-fold:
     train_batch_size: 128
     val_batch_size: 128
     optimizer: 'AdamP'
-    lr: 0.0001
-    weight_decay: 0.01
+    max_lr: 0.0001
+    min_lr: 0.00001
+    cycle: 3
+    gamma: 0.5
+    weight_decay: 0.0001
     scheduler: 'CosineAnnealingLR'
     loss_fn: 'CrossEntropyLoss'
     log_intervals: 10

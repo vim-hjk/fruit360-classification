@@ -29,4 +29,4 @@ k-fold:
   num_classes: 131
   batch_size: 128
   info_path: './prediction/info.csv'
-  save_path: './prediction/submission.csv'
+  save_path: './prediction/submission.csv'ens4

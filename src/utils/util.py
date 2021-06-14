@@ -8,12 +8,11 @@ from adamp import AdamP
 from madgrad import MADGRAD
 from pytorch_ranger import Ranger
 from torch.optim import Adam, AdamW, SGD
-from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 
-from loss import *
-from dataset import Fruit360Dataset
+from ..lib.losses import *
+from ..lib.dataset import Fruit360Dataset
 
 
 # Fix random seed
@@ -27,16 +26,13 @@ def seed_everything(seed: int = 42):
     torch.backends.cudnn.benchmark = True  # type: ignore
 
 
-def get_optimizer_and_scheduler(optimizers):
-    param, optimizer_name, lr, weight_decay, scheduler_name = optimizers
+def get_optimizer(optimizers):
+    param, optimizer_name, lr, weight_decay = optimizers
 
     optimizer_module = getattr(import_module('adamp'), optimizer_name)
-    scheduler_module = getattr(import_module('torch.optim.lr_scheduler'), scheduler_name)
-
     optimizer = optimizer_module(param, lr=lr, weight_decay=weight_decay)
-    scheduler = scheduler_module(optimizer, T_max=50, eta_min=0)
 
-    return optimizer, scheduler     
+    return optimizer     
 
 
 def get_dataloader(df, transform, batch_size, shuffle):

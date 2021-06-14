@@ -12,11 +12,10 @@ from tqdm import tqdm
 from importlib import import_module
 from torch.nn import CrossEntropyLoss
 from torchsummary import summary as summary_
-from torch.utils.tensorboard import SummaryWriter
 
-from utils import get_optimizer_and_scheduler, CutMix, AverageMeter, ComputeMetric
-from model import PretrainedModel
-from loss import LabelSmoothingLoss, F1Loss, FocalLoss
+from ..utils.util import get_optimizer, CutMix, AverageMeter, ComputeMetric
+from ..models.timm import PretrainedModel
+from .scheduler import CosineAnnealingWarmupRestarts
 
 
 def train(cfg, k, train_loader, val_loader):
@@ -42,20 +41,32 @@ def train(cfg, k, train_loader, val_loader):
     
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    model = PretrainedModel(model_arc=MODEL_ARC, num_classes=NUM_CLASSES)
-    model.to(device)
+    model = PretrainedModel(model_arc=MODEL_ARC, num_classes=NUM_CLASSES)    
+    model.to(device)    
+
     if k < 2:
         summary_(model, (3, 224, 224), batch_size=train_batch_size)
+
+    wandb.watch(model)
 
     optimizers = [
         model.parameters(),
         cfg.values.train_args.optimizer,
-        cfg.values.train_args.lr,
-        cfg.values.train_args.weight_decay,
-        cfg.values.train_args.scheduler
+        cfg.values.train_args.max_lr,
+        cfg.values.train_args.weight_decay
     ]
 
-    optimizer, scheduler = get_optimizer_and_scheduler(optimizers)
+    optimizer = get_optimizer(optimizers)
+    first_cycle_steps = len(train_loader) * num_epochs // cfg.values.train_args.cycle
+    scheduler = CosineAnnealingWarmupRestarts(
+        optimizer,
+        first_cycle_steps=first_cycle_steps,
+        cycle_mult=1.0,
+        max_lr=cfg.values.train_args.max_lr,
+        min_lr=cfg.values.train_args.min_lr,
+        warmup_steps=int(first_cycle_steps * 0.25),
+        gamma=cfg.values.train_args.gamma
+    )
     loss_module = getattr(import_module('torch.nn'), loss_fn)
     criterion = loss_module()
 
@@ -104,8 +115,14 @@ def train(cfg, k, train_loader, val_loader):
             optimizer.step()
             scheduler.step()
 
-            if i % log_intervals == 0:
-                current_lr = scheduler.get_last_lr()[0]
+            current_lr = scheduler.get_lr()[0]
+            wandb.log({
+                    'Learning rate' : current_lr,
+                    'Train/Loss' : loss_values.val,
+                    'Train/Top-1 accuracy' : top1.val,
+                    'Train/Top-5 accuracy' : top5.val
+            })
+            if i % log_intervals == 0:                                                
                 tqdm.write(f'Epoch : [{epoch + 1}/{num_epochs}][{i}/{len(train_loader)}] || '
                            f'LR : {current_lr:.5f} || '
                            f'Train Loss : {loss_values.val:.4f} ({loss_values.avg:.4f}) || '                        
@@ -138,10 +155,17 @@ def train(cfg, k, train_loader, val_loader):
                     top1.update(top1_err.item(), images.size(0))
                     top5.update(top5_err.item(), images.size(0))
 
+            wandb.log({
+                'Epoch' : epoch + 1,
+                'Validation/Loss' : loss_values.avg,
+                'Validation/Top-1 accuracy' : top1.avg,
+                'Validation/Top-5 accuracy' : top5.avg
+            })
             tqdm.write(f'Epoch : [{epoch + 1}/{num_epochs}] || '
                        f'Val Loss : {loss_values.avg:.4f} || '                        
                        f'Val Top 1-acc : {top1.avg:.3f}% || '
                        f'Val Top 5-acc : {top5.avg:.3f}%')
+            
 
             is_best = top1.avg >= best_acc
             best_acc = max(top1.avg, best_acc)
@@ -155,17 +179,3 @@ def train(cfg, k, train_loader, val_loader):
         
         else:
             torch.save(model.state_dict(), os.path.join(OUTPUT_DIR, MODEL_ARC, f'_{epoch + 1}_epoch_{top1.avg:.2f}%_only_train.pth'))
-
-
-                
-            
-
-
-
-
-                
-
-
-            
-
-
