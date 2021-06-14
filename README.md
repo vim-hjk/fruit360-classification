@@ -133,7 +133,7 @@ k-fold:
 ![gradcam](./debug_result/grad_cam.png)
 ---
 <br></br>
-## 🥑 Result <a name = 'Results'></a>
+## 🥑 Results <a name = 'Results'></a>
 ```
                      Accuracy : 0.96602                     
                                                             
