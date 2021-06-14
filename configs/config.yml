@@ -1,6 +1,6 @@
 base:
   seed: 42
-  model_arc: 'efficientnet_b0'
+  model_arc: 'resnet18d'
   num_classes: 131
   input_dir: './data/train.csv'
   output_dir: './checkpoints/'
@@ -10,7 +10,7 @@ base:
     beta: 1.0
     cutmix_prob: 0.5
   train_args:
-    num_epochs: 3
+    num_epochs: 5
     train_batch_size: 128
     val_batch_size: 128
     optimizer: 'AdamP'
@@ -30,7 +30,7 @@ base:
 
 k-fold:
   seed: 42
-  model_arc: 'efficientnet_b0'
+  model_arc: 'resnet18d'
   num_classes: 131
   input_dir: './data/train.csv'
   output_dir: './checkpoints/'
