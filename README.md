@@ -1,5 +1,139 @@
-# fruit360-classification
+📦 Toy Box] Image Classification
+==== 
+- This repository implements basic image classficiation using deeplearning.
+- You can download the dataset [here](https://www.kaggle.com/moltean/fruits).
+- It is connected through the **wandb**. You can check the simple result in [here](https://wandb.ai/vim_hjk/fruit360-image-classification?workspace=user-vim_hjk).
+<br></br>
+## 🍎 Table of content
+- [Getting Start](#GettingStart)<br>
+- [CutMix](#CutMix)<br>
+- [Grad-CAM](#GradCAM)<br>
+- [Results](#Results)<br>
+---
+## 🍓 Getting Start <a name = 'GettingStart'></a>
+### Environment
+- pytorch >= 1.6.0
+- timm == 0.4.9
+- albumentations == 1.0.0
+- openc-python == 4.5.2.54
+- wandb == 0.10.32
+- numpy == 1.20.3
+- scikit-learn
+- easydict
+- pyyaml
+- adamp
+- pandas
+### Dataset
+- fruits360 dataset (kaggle)
+- [Download link](https://www.kaggle.com/moltean/fruits)
+### Directory structure
+```
+├─checkpoints
+├─configs
+├─data
+├─debug_result
+├─eda
+├─fruits-360 (download dataset)
+│  ├─papers
+│  ├─Test
+│  ├─test-multiple_fruits
+│  ├─Training
+├─prediction
+├─results
+└─src
+   ├─lib
+   ├─models
+   └─utils
+```
+### Config
+- You can set various experimental environments in `configs/config.py`
+``` yaml
+base:
+  seed: 42                            # random seed
+  model_arc: 'resnet18d'              # you can use the model provided by timm.
+  num_classes: 131
+  input_dir: './data/train.csv'       # dataframe generated from eda/labeling.ipynb
+  output_dir: './checkpoints/'        # path to save checkpoints
+  train_only: False                   # without validation
+  cutmix_args:                        # for cutmix augmentation it will be improve to generalized performance
+    use_cutmix: True
+    beta: 1.0
+    cutmix_prob: 0.5
+  train_args:                 
+    num_epochs: 5                     # number of total epochs
+    train_batch_size: 128             # train mini-batch size
+    val_batch_size: 128               # validation mini-batch size
+    optimizer: 'AdamP'                # optimizer
+    max_lr: 0.0001                    # max learning rate for CosineAnnealingLR
+    min_lr: 0.00001                   # min learning rate for CosineAnnealingLR
+    cycle: 3                          # total cycle
+    gamma: 0.5                        # restarts rate
+    weight_decay: 0.0001              # weight decay
+    scheduler: 'CosineAnnealingLR'    # learning rate scheduler
+    loss_fn: 'CrossEntropyLoss'       # loss function
+    log_intervals: 10                 # steps for the print log
+    eval_metric: 'accuracy'           # evaluation metric
+  val_args: 
+    use_kfold: False                  # K-Fold Cross Validation
+    n_splits: 0                       # number of K (split size)
+    test_size: 0.2                    # validation set size
 
+k-fold:
+  seed: 42
+  model_arc: 'resnet18d'
+  num_classes: 131
+  input_dir: './data/train.csv'
+  output_dir: './checkpoints/'
+  train_only: False
+  cutmix_args:
+    use_cutmix: True
+    beta: 1.0
+    cutmix_prob: 0.5
+  train_args:
+    num_epochs: 1
+    train_batch_size: 128
+    val_batch_size: 128
+    optimizer: 'AdamP'
+    max_lr: 0.0001
+    min_lr: 0.00001
+    cycle: 3
+    gamma: 0.5
+    weight_decay: 0.0001
+    scheduler: 'CosineAnnealingLR'
+    loss_fn: 'CrossEntropyLoss'
+    log_intervals: 10
+    eval_metric: 'accuracy'            
+  val_args:
+    use_kfold: True
+    n_splits: 5
+    test_size: 0.0
+```
+### Train
+- run `eda/labeling.ipynb`
+- `python main.py`
+### Evaluation
+- `python inference.py`
+- `python eval.py`
+### Debug (Grad CAM)
+- `python debug.py`
+---
+## 🍍 CutMix <a name = 'CutMix'></a>
+- [Paper](https://arxiv.org/abs/1905.04899)
+- [Official code](https://github.com/clovaai/CutMix-PyTorch)
+
+![cutmix_example](./debug_result/cutmix_example.png)
+---
+<br></br>
+## 🍊 Grad-CAM <a name = 'GradCAM'></a>
+- `python debug.py`
+- [Paper](https://arxiv.org/abs/1610.02391)
+- [Official code](https://github.com/ramprs/grad-cam)
+
+![Original](./debug_result/org.png)
+![gradcam](./debug_result/grad_cam.png)
+---
+<br></br>
+## 🥑 Result <a name = 'Results'></a>
 ```
                      Accuracy : 0.96602                     
                                                             
